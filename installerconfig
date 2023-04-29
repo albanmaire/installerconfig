@@ -22,3 +22,13 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+# Preamble
+# ----------------------------------------------------------------
+
+# Partition the disk(s) according to your needs
+#PARTITIONS=''
+
+# Choose the system components to be installed
+DISTRIBUTION='kernel.txz base.txz'
