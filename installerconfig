@@ -32,3 +32,8 @@
 
 # Choose the system components to be installed
 DISTRIBUTION='kernel.txz base.txz'
+
+
+# Setup script
+# ----------------------------------------------------------------
+#!/usr/bin/env sh
