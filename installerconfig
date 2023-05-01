@@ -83,7 +83,7 @@ _RC_CONF_CUSTOM='/etc/rc.conf.d'
 # Networking
 network() {
 	local RC_CONF_FILE
-	local ITEMS ITEM
+	local ITEMS ITEM _ITEM
 
 	[ ! "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_FILE"
 
@@ -94,7 +94,8 @@ network() {
 	'
 
 	for ITEM in $ITEMS; do
-		[ "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_CUSTOM/`echo $ITEM | tr '[:upper:]' '[:lower:]'`"
+		_ITEM=$(echo $ITEM | tr '[:upper:]' '[:lower:]')
+		[ "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_CUSTOM/$_ITEM"
 
 		case $ITEM in
 			HOSTNAME)
