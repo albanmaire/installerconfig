@@ -37,3 +37,59 @@ DISTRIBUTION='kernel.txz base.txz'
 # Setup script
 # ----------------------------------------------------------------
 #!/usr/bin/env sh
+
+# Set up your network configuration
+HOSTNAME=''
+INTERFACE=''
+INET=''
+NETMASK=''
+DEFAULTROUTER=''
+
+# Define rc.conf(5) behavior
+RC_CONF_DIR=''
+
+
+# Default network configuration
+_HOSTNAME=''
+_INTERFACE=''
+_INET=''
+_NETMASK=''
+_DEFAULTROUTER=''
+
+# Default rc.conf(5) behaviour
+_RC_CONF_DIR='NO'
+_RC_CONF_FILE='/etc/rc.conf'
+_RC_CONF_CUSTOM='/etc/rc.conf.d'
+
+
+# Networking
+network() {
+	local RC_CONF_FILE
+	local ITEMS ITEM
+
+	[ ! "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_FILE"
+
+	ITEMS='
+		HOSTNAME
+		NETWORK
+		ROUTING
+	'
+
+	for ITEM in $ITEMS; do
+		[ "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_CUSTOM/`echo $ITEM | tr '[:upper:]' '[:lower:]'`"
+
+		case $ITEM in
+			HOSTNAME)
+				sysrc -f $RC_CONF_FILE hostname="${HOSTNAME:-$_HOSTNAME}"
+				;;
+
+			NETWORK)
+				sysrc -f $RC_CONF_FILE ifconfig_${INTERFACE:-$_INTERFACE}="inet ${INET:-$_INET} netmask ${NETMASK:-$_NETMASK}"
+				;;
+
+			ROUTING)
+				sysrc -f $RC_CONF_FILE defaultrouter="${DEFAULTROUTER:-$_DEFAULTROUTER}"
+				;;
+		esac
+	done
+}
