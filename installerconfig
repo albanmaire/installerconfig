@@ -54,6 +54,19 @@ NTPD=''
 POWERD=''
 DUMPDEV=''
 
+# Declare hardening options
+HIDE_UIDS=''
+HIDE_GIDS=''
+HIDE_JAIL=''
+READ_MSGBUF=''
+PROC_DEBUG=''
+RANDOM_PID=''
+CLEAR_TMP=''
+DISABLE_SYSLOGD=''
+DISABLE_SENDMAIL=''
+SECURE_CONSOLE=''
+DISABLE_DDTRACE=''
+
 # Define rc.conf(5) behavior
 RC_CONF_DIR=''
 
@@ -73,6 +86,19 @@ _NTPDATE='NO'
 _NTPD='NO'
 _POWERD='NO'
 _DUMPDEV='AUTO'
+
+# Default hardening options
+_HIDE_UIDS='NO'
+_HIDE_GIDS='NO'
+_HIDE_JAIL='NO'
+_READ_MSGBUF='NO'
+_PROC_DEBUG='NO'
+_RANDOM_PID='NO'
+_CLEAR_TMP='NO'
+_DISABLE_SYSLOGD='NO'
+_DISABLE_SENDMAIL='NO'
+_SECURE_CONSOLE='NO'
+_DISABLE_DDTRACE='NO'
 
 # Default rc.conf(5) behaviour
 _RC_CONF_DIR='NO'
@@ -143,4 +169,96 @@ services() {
 		[ "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_CUSTOM/dumpon"
 		sysrc -f $RC_CONF_FILE dumpdev="AUTO"
 	fi
+}
+
+# Hardening
+hardening() {
+	local RC_CONF_FILE
+	local ITEMS ITEM
+	local VALUE _VALUE
+
+	[ ! "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_FILE"
+
+	ITEMS='
+		HIDE_UIDS
+		HIDE_GIDS
+		HIDE_JAIL
+		READ_MSGBUF
+		PROC_DEBUG
+		RANDOM_PID
+		CLEAR_TMP
+		DISABLE_SYSLOGD
+		DISABLE_SENDMAIL
+		SECURE_CONSOLE
+		DISABLE_DDTRACE
+	'
+
+	for ITEM in $ITEMS; do
+		eval VALUE="\$$ITEM"
+		eval _VALUE="\$_$ITEM"
+
+		if [ "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ]; then
+			case $ITEM in
+				CLEAR_TMP)
+					RC_CONF_FILE="$_RC_CONF_CUSTOM/cleartmp"
+					;;
+
+				DISABLE_SYSLOGD)
+					RC_CONF_FILE="$_RC_CONF_CUSTOM/syslogd"
+					;;
+
+				DISABLE_SENDMAIL)
+					RC_CONF_FILE="$_RC_CONF_CUSTOM/sendmail"
+					;;
+			esac
+		fi
+
+		if [ "${VALUE:-$_VALUE}" = 'YES' ]; then
+			case $ITEM in
+				HIDE_UIDS)
+					echo 'security.bsd.see_other_uids="0"' >> /etc/sysctl.conf
+					;;
+
+				HIDE_GIDS)
+					echo 'security.bsd.see_other_gids="0"' >> /etc/sysctl.conf
+					;;
+
+				HIDE_JAIL)
+					echo 'security.bsd.see_jail_proc="0"' >> /etc/sysctl.conf
+					;;
+
+				READ_MSGBUF)
+					echo 'security.bsd.unprivileged_read_msgbuf="0"' >> /etc/sysctl.conf
+					;;
+
+				PROC_DEBUG)
+					echo 'security.bsd.unprivileged_proc_debug="0"' >> /etc/sysctl.conf
+					;;
+
+				RANDOM_PID)
+					echo 'kern.randompid="1"' >> /etc/sysctl.conf
+					;;
+
+				CLEAR_TMP)
+					sysrc -f $RC_CONF_FILE clear_tmp_enable="YES"
+					;;
+
+				DISABLE_SYSLOGD)
+					sysrc -f $RC_CONF_FILE syslogd_flags="-ss"
+					;;
+
+				DISABLE_SENDMAIL)
+					sysrc -f $RC_CONF_FILE sendmail_enable="NONE"
+					;;
+
+				SECURE_CONSOLE)
+					sed -i.bak 's/unknown	off secure/unknown	off insecure/g' /etc/ttys
+					;;
+
+				DISABLE_DDTRACE)
+					echo 'security.bsd.allow_destructive_dtrace="0"' >> /etc/sysctl.conf
+					;;
+			esac
+		fi
+	done
 }
