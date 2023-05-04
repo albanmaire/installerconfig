@@ -67,6 +67,10 @@ DISABLE_SENDMAIL=''
 SECURE_CONSOLE=''
 DISABLE_DDTRACE=''
 
+# Assign system settings
+TIMEZONE=''
+KEYMAP=''
+
 # Define rc.conf(5) behavior
 RC_CONF_DIR=''
 
@@ -99,6 +103,10 @@ _DISABLE_SYSLOGD='NO'
 _DISABLE_SENDMAIL='NO'
 _SECURE_CONSOLE='NO'
 _DISABLE_DDTRACE='NO'
+
+# Default system settings
+_TIMEZONE='UTC'
+_KEYMAP='us.kbd'
 
 # Default rc.conf(5) behaviour
 _RC_CONF_DIR='NO'
@@ -260,5 +268,38 @@ hardening() {
 					;;
 			esac
 		fi
+	done
+}
+
+# System
+system() {
+	local RC_CONF_FILE
+	local ITEMS ITEM _ITEM
+
+	[ ! "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ] && RC_CONF_FILE="$_RC_CONF_FILE"
+
+	ITEMS='
+		TIMEZONE
+		KEYMAP
+	'
+
+	for ITEM in $ITEMS; do
+		if [ "${RC_CONF_DIR:-$_RC_CONF_DIR}" = 'YES' ]; then
+			case $ITEM in
+				KEYMAP)
+					RC_CONF_FILE="$_RC_CONF_CUSTOM/syscons"
+					;;
+			esac
+		fi
+
+		case $ITEM in
+			TIMEZONE)
+				cp /usr/share/zoneinfo/${TIMEZONE:-$_TIMEZONE} /etc/localtime
+				;;
+
+			KEYMAP)
+				sysrc -f $RC_CONF_FILE keymap="${KEYMAP:-$_KEYMAP}"
+				;;
+		esac
 	done
 }
