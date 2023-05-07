@@ -71,6 +71,11 @@ DISABLE_DDTRACE=''
 TIMEZONE=''
 KEYMAP=''
 
+# Modify "root" parameters
+ROOT_PASSWORD=''
+ROOT_SSH=''
+ROOT_PUBKEY=''
+
 # Define rc.conf(5) behavior
 RC_CONF_DIR=''
 
@@ -107,6 +112,11 @@ _DISABLE_DDTRACE='NO'
 # Default system settings
 _TIMEZONE='UTC'
 _KEYMAP='us.kbd'
+
+# Default "root" parameters
+_ROOT_PASSWORD=''
+_ROOT_SSH=''
+_ROOT_PUBKEY=''
 
 # Default rc.conf(5) behaviour
 _RC_CONF_DIR='NO'
@@ -302,4 +312,26 @@ system() {
 				;;
 		esac
 	done
+}
+
+# Root
+root() {
+	if [ -n "${ROOT_PASSWORD:-$_ROOT_PASSWORD}" ]; then
+		[ $(echo ${ROOT_PASSWORD:-$_ROOT_PASSWORD} | cut -c 1-3) = '$6$' ] && PW_PASSWORD_OPTION='-H' || PW_PASSWORD_OPTION='-h'
+		echo ${ROOT_PASSWORD:-$_ROOT_PASSWORD} | pw usermod root $PW_PASSWORD_OPTION 0
+	fi
+
+	if [ -n "${ROOT_SSH:-$_ROOT_SSH}" ]; then
+		if [ "${ROOT_SSH:-$_ROOT_SSH}" = 'YES' -o "${ROOT_SSH:-$_ROOT_SSH}" = 'WITHOUT-PASSWORD' ]; then
+			ROOT_LOGIN=$(echo ${ROOT_SSH:-$_ROOT_SSH} | tr '[:upper:]' '[:lower:]')
+			sed -i.bak "s/#PermitRootLogin no/PermitRootLogin $ROOT_LOGIN/g" /etc/ssh/sshd_config
+		fi
+	fi
+
+	if [ -n "${ROOT_PUBKEY:-$_ROOT_PUBKEY}" ]; then
+		mkdir /root/.ssh
+		echo ${ROOT_PUBKEY:-$_ROOT_PUBKEY} > /root/.ssh/authorized_keys
+		chmod 700 /root/.ssh
+		chmod 600 /root/.ssh/authorized_keys
+	fi
 }
