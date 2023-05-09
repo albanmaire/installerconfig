@@ -382,3 +382,13 @@ user() {
 		fi
 	fi
 }
+
+
+# Run!
+network
+services
+hardening
+system
+root
+user
+reboot
