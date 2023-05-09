@@ -76,6 +76,18 @@ ROOT_PASSWORD=''
 ROOT_SSH=''
 ROOT_PUBKEY=''
 
+# Write settings for adding a new user
+USER_ID=''
+USER_NAME=''
+USER_PASSWORD=''
+USER_HOME=''
+USER_SHELL=''
+USER_PUBKEY=''
+
+GROUP_ID=''
+GROUP_NAME=''
+GROUP_LIST=''
+
 # Define rc.conf(5) behavior
 RC_CONF_DIR=''
 
@@ -117,6 +129,18 @@ _KEYMAP='us.kbd'
 _ROOT_PASSWORD=''
 _ROOT_SSH=''
 _ROOT_PUBKEY=''
+
+# Default settings for adding a new user
+_USER_ID=''
+_USER_NAME=''
+_USER_PASSWORD=''
+_USER_HOME="/usr/home/${USER_NAME:-$_USER_NAME}"
+_USER_SHELL='/bin/csh'
+_USER_PUBKEY=''
+
+_GROUP_ID="${USER_ID:-$_USER_ID}"
+_GROUP_NAME="${USER_NAME:-$_USER_NAME}"
+_GROUP_LIST=''
 
 # Default rc.conf(5) behaviour
 _RC_CONF_DIR='NO'
@@ -333,5 +357,28 @@ root() {
 		echo ${ROOT_PUBKEY:-$_ROOT_PUBKEY} > /root/.ssh/authorized_keys
 		chmod 700 /root/.ssh
 		chmod 600 /root/.ssh/authorized_keys
+	fi
+}
+
+# User
+user() {
+	if [ -n "${USER_NAME:-$_USER_NAME}" -a -n "${USER_PASSWORD:-$_USER_PASSWORD}" ]; then
+		[ -n "${GROUP_ID:-$_GROUP_ID}" ] && PW_ASSIGN_GID="-g ${GROUP_ID:-$_GROUP_ID}" || PW_ASSIGN_GID=''
+		[ -n "${USER_ID:-$_USER_ID}" ] && PW_ASSIGN_UID="-u ${USER_ID:-$_USER_ID}" || PW_ASSIGN_UID=''
+		pw groupadd $PW_ASSIGN_GID -n ${GROUP_NAME:-$_GROUP_NAME}
+		pw useradd $PW_ASSIGN_UID -n ${USER_NAME:-$_USER_NAME} -d ${USER_HOME:-$_USER_HOME} -s ${USER_SHELL:-$_USER_SHELL} -m
+
+		[ $(echo ${USER_PASSWORD:-$_USER_PASSWORD} | cut -c 1-3) = '$6$' ] && PW_PASSWORD_OPTION='-H' || PW_PASSWORD_OPTION='-h'
+		echo ${USER_PASSWORD:-$_USER_PASSWORD} | pw usermod ${USER_NAME:-$_USER_NAME} $PW_PASSWORD_OPTION 0
+
+		[ -n "${GROUP_LIST:-$_GROUP_LIST}" ] && pw usermod ${USER_NAME:-$_USER_NAME} -G ${GROUP_LIST:-$_GROUP_LIST}
+
+		if [ -n "${USER_PUBKEY:-$_USER_PUBKEY}" ]; then
+			mkdir -p ${USER_HOME:-$_USER_HOME}/.ssh
+			echo ${USER_PUBKEY:-$_USER_PUBKEY} > ${USER_HOME:-$_USER_HOME}/.ssh/authorized_keys
+			chmod 700 ${USER_HOME:-$_USER_HOME}/.ssh
+			chmod 600 ${USER_HOME:-$_USER_HOME}/.ssh/authorized_keys
+			chown -R ${USER_NAME:-$_USER_NAME}:${GROUP_NAME:-$_GROUP_NAME} ${USER_HOME:-$_USER_HOME}/.ssh
+		fi
 	fi
 }
