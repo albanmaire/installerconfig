@@ -44,6 +44,7 @@ INTERFACE=''
 INET=''
 NETMASK=''
 DEFAULTROUTER=''
+NAMESERVERS=''
 
 # Activate services at startup
 LOCAL_UNBOUND=''
@@ -98,6 +99,7 @@ _INTERFACE=''
 _INET=''
 _NETMASK=''
 _DEFAULTROUTER=''
+_NAMESERVERS=''
 
 # Default services activated at startup
 _LOCAL_UNBOUND='NO'
@@ -159,6 +161,7 @@ network() {
 		HOSTNAME
 		NETWORK
 		ROUTING
+		RESOLV
 	'
 
 	for ITEM in $ITEMS; do
@@ -176,6 +179,14 @@ network() {
 
 			ROUTING)
 				sysrc -f $RC_CONF_FILE defaultrouter="${DEFAULTROUTER:-$_DEFAULTROUTER}"
+				;;
+
+			RESOLV)
+				if [ -n "${NAMESERVERS:-$_NAMESERVERS}" ]; then
+					for ADDRESS in ${NAMESERVERS:-$_NAMESERVERS}; do
+						echo "nameserver $ADDRESS" >> /etc/resolv.conf
+					done
+				fi
 				;;
 		esac
 	done
