@@ -150,7 +150,7 @@ _RC_CONF_FILE='/etc/rc.conf'
 _RC_CONF_CUSTOM='/etc/rc.conf.d'
 
 
-# Networking
+# Networking & DNS resolution
 network() {
 	local RC_CONF_FILE
 	local ITEMS ITEM _ITEM
@@ -192,7 +192,7 @@ network() {
 	done
 }
 
-# Services
+# Services at startup
 services() {
 	local RC_CONF_FILE
 	local ITEMS ITEM _ITEM
@@ -224,7 +224,7 @@ services() {
 	fi
 }
 
-# Hardening
+# Hardening options
 hardening() {
 	local RC_CONF_FILE
 	local ITEMS ITEM
@@ -316,7 +316,7 @@ hardening() {
 	done
 }
 
-# System
+# System settings
 system() {
 	local RC_CONF_FILE
 	local ITEMS ITEM _ITEM
@@ -349,7 +349,7 @@ system() {
 	done
 }
 
-# Root
+# Root account
 root() {
 	if [ -n "${ROOT_PASSWORD:-$_ROOT_PASSWORD}" ]; then
 		[ $(echo ${ROOT_PASSWORD:-$_ROOT_PASSWORD} | cut -c 1-3) = '$6$' ] && PW_PASSWORD_OPTION='-H' || PW_PASSWORD_OPTION='-h'
@@ -371,7 +371,7 @@ root() {
 	fi
 }
 
-# User
+# User account
 user() {
 	if [ -n "${USER_NAME:-$_USER_NAME}" -a -n "${USER_PASSWORD:-$_USER_PASSWORD}" ]; then
 		[ -n "${GROUP_ID:-$_GROUP_ID}" ] && PW_ASSIGN_GID="-g ${GROUP_ID:-$_GROUP_ID}" || PW_ASSIGN_GID=''
