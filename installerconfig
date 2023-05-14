@@ -309,7 +309,7 @@ hardening() {
 					;;
 
 				DISABLE_DDTRACE)
-					echo 'security.bsd.allow_destructive_dtrace="0"' >> /etc/sysctl.conf
+					echo 'security.bsd.allow_destructive_dtrace="0"' >> /boot/loader.conf
 					;;
 			esac
 		fi
