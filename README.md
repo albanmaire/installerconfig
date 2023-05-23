@@ -1,10 +1,8 @@
 # installerconfig
 
-`installerconfig` is a tool designed to automate the installation and configuration of FreeBSD.
+`installerconfig` is a highly customizable configuration tool for FreeBSD. This tool is designed to simplify and automate the process of installing and configuring a FreeBSD system, thus reducing the time and effort required to set up a new system.
 
-## Documentation
-
-The documentation is located [here](https://gitlab.com/albanmaire/installerconfig/-/wikis/home)!
+This one is inspired by what `bsdinstall` does in interractive mode with some additions.
 
 ## License
 
